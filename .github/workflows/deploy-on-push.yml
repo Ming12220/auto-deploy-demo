@@ -6,18 +6,7 @@ jobs:
     steps:
       - name: check out the code to build server
         uses: actions/checkout@v4
-      - name: clean remote directory
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{secrets.HOST}}
-          username: ${{secrets.SSH_USER_NAME}}
-          port: ${{secrets.SSH_PORT}}
-          key: ${{secrets.SSH_KEY}}
-          script: |
-            sudo rm -rf /var/www/html/index.html
-            sudo mkdir -p /var/www/html
-            sudo chown ubuntu:ubuntu /var/www/html
-      - name: copy file to server
+      - name: copy file to temp
         uses: appleboy/scp-action@master
         with:
           host: ${{secrets.HOST}}
@@ -25,9 +14,8 @@ jobs:
           port: ${{secrets.SSH_PORT}}
           key: ${{secrets.SSH_KEY}}
           source: "./html/index.html"
-          target: "/var/www/html/"
-          strip_components: 1
-      - name: fix permissions
+          target: "/tmp/"
+      - name: move file to nginx
         uses: appleboy/ssh-action@master
         with:
           host: ${{secrets.HOST}}
@@ -35,5 +23,8 @@ jobs:
           port: ${{secrets.SSH_PORT}}
           key: ${{secrets.SSH_KEY}}
           script: |
+            sudo mkdir -p /var/www/html
+            sudo mv /tmp/html/index.html /var/www/html/index.html
             sudo chmod 644 /var/www/html/index.html
             sudo chown www-data:www-data /var/www/html/index.html
+            rm -rf /tmp/html
