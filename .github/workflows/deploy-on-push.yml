@@ -24,3 +24,13 @@ jobs:
           key: ${{secrets.SSH_KEY}}
           source: "./html/index.html"
           target: "/var/www/html/"
+      - name: fix permissions
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.HOST}}
+          username: ${{secrets.SSH_USER_NAME}}
+          port: ${{secrets.SSH_PORT}}
+          key: ${{secrets.SSH_KEY}}
+          script: |
+            sudo chmod 644 /var/www/html/index.html
+            sudo chown www-data:www-data /var/www/html/index.html
